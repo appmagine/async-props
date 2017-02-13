@@ -26,7 +26,7 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps({ components, params, loadContext }, cb) {
+function loadAsyncProps({ components, params, location, loadContext }, cb) {
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
@@ -44,7 +44,7 @@ function loadAsyncProps({ components, params, loadContext }, cb) {
     maybeFinish()
   } else {
     components.forEach((Component, index) => {
-      Component.loadProps({ params, loadContext }, (error, props) => {
+      Component.loadProps({ params, location, loadContext }, (error, props) => {
         const isDeferredCallback = hasCalledBack[index]
         if (isDeferredCallback && needToLoadCounter === 0) {
           cb(error, {
@@ -93,10 +93,11 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, loadContext, cb) {
+export function loadPropsOnServer({ components, params, location }, loadContext, cb) {
   loadAsyncProps({
     components: filterAndFlattenComponents(components),
     params,
+    location, 
     loadContext
   }, (err, propsAndComponents) => {
     if (err) {
@@ -261,6 +262,7 @@ const AsyncProps = React.createClass({
       loadAsyncProps({
         components: filterAndFlattenComponents(components),
         params,
+        location,
         loadContext
       }, this.handleError((err, propsAndComponents) => {
         const reloading = options && options.reload
